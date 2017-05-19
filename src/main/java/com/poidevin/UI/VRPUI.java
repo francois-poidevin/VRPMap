@@ -109,7 +109,7 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
         {
             boolean[] canEdit = new boolean []
             {
-                true, true, false, false, true, true
+                false, true, false, false, true, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex)
@@ -119,6 +119,7 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
         });
         grdDepot.setHorizontalScrollEnabled(true);
         grdDepot.setSortable(false);
+        grdDepot.getTableHeader().setReorderingAllowed(false);
         jScrollPanVehicle.setViewportView(grdDepot);
 
         jChkBoxInfFleetFlag.setText("Infinite Fleet");
@@ -161,7 +162,7 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
         {
             boolean[] canEdit = new boolean []
             {
-                true, true, false, false, true, true, true
+                false, true, false, false, true, true, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex)
@@ -171,6 +172,7 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
         });
         grdLocation.setHorizontalScrollEnabled(true);
         grdLocation.setSortable(false);
+        grdLocation.getTableHeader().setReorderingAllowed(false);
         jScrollPanParcels.setViewportView(grdLocation);
 
         javax.swing.GroupLayout jPanSpritLocationLayout = new javax.swing.GroupLayout(jPanSpritLocation);

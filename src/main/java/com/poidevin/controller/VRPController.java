@@ -7,6 +7,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -17,6 +19,9 @@ import com.poidevin.beans.org.openstreetmap.gui.jmapviewer.MapMarkerDot;
 public class VRPController {
 	
 	private VRPUI view;
+	
+	private List<MapMarkerDot> lstDepotMarker = new ArrayList<>();
+	private List<MapMarkerDot> lstLocationMarker = new ArrayList<>();
 
 
 	public void setView(VRPUI vrpui) {
@@ -112,6 +117,11 @@ public class VRPController {
         				"",
         				"",
         				""});
+				/**
+				 * clearing MapMarkerDot List
+				 */
+				lstDepotMarker.clear();
+				lstLocationMarker.clear();
 			}
 		});
 		
@@ -155,6 +165,17 @@ public class VRPController {
 					
                 	if(getView().getGrdDepot().getSelectedRowCount() != 0 )
                 	{
+                		/**
+                		 * remove existing Depot marker on map
+                		 */
+                		for(MapMarkerDot clsMarker : lstDepotMarker)
+                		{
+                			getView().getMap().removeMapMarker(clsMarker);
+                		}
+                		
+                		/**
+                		 * Adding new Marker item in Grid
+                		 */
                 		DefaultTableModel model = (DefaultTableModel) getView().getGrdDepot().getModel();
                 		int rowCount = model.getRowCount();
         				//Remove rows one by one from the end of the table
@@ -173,6 +194,7 @@ public class VRPController {
                     	clsMarker.setName("1");
                     	clsMarker.setBackColor(Color.RED);
                     	getView().getMap().addMapMarker( clsMarker );
+                    	lstDepotMarker.add(clsMarker);
                 	}
 
                 	if(getView().getGrdLocation().getSelectedRowCount() != 0 )
@@ -197,7 +219,7 @@ public class VRPController {
                 				"1", 
                 				((Coordinate)getView().getMap().getPosition( e.getPoint() )).getLat(),
                 				((Coordinate)getView().getMap().getPosition( e.getPoint() )).getLon(),
-                				"1",
+                				"300",
                 				"",
                 				""});
                 		
