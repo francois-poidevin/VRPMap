@@ -1,5 +1,7 @@
 package com.poidevin.UI;
 
+import javax.swing.JFrame;
+
 import com.poidevin.beans.org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent;
 import com.poidevin.beans.org.openstreetmap.gui.jmapviewer.interfaces.JMapViewerEventListener;
 import com.poidevin.controller.VRPController;
@@ -47,7 +49,6 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
         jScrollPanVehicle = new javax.swing.JScrollPane();
         grdDepot = new org.jdesktop.swingx.JXTable();
         jChkBoxInfFleetFlag = new javax.swing.JCheckBox();
-        jBtnAddDepot = new javax.swing.JButton();
         jPanSpritLocation = new javax.swing.JPanel();
         jScrollPanParcels = new javax.swing.JScrollPane();
         grdLocation = new org.jdesktop.swingx.JXTable();
@@ -85,6 +86,7 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
         jLblScaleVal = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(1200, 768));
 
         jSplitPane.setDividerLocation(350);
         jSplitPane.setDividerSize(7);
@@ -119,12 +121,10 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
         });
         grdDepot.setHorizontalScrollEnabled(true);
         grdDepot.setSortable(false);
-        grdDepot.getTableHeader().setReorderingAllowed(false);
+		grdDepot.getTableHeader().setReorderingAllowed(false);
         jScrollPanVehicle.setViewportView(grdDepot);
 
         jChkBoxInfFleetFlag.setText("Infinite Fleet");
-
-        jBtnAddDepot.setText("Add");
 
         javax.swing.GroupLayout jPanSpritDepotLayout = new javax.swing.GroupLayout(jPanSpritDepot);
         jPanSpritDepot.setLayout(jPanSpritDepotLayout);
@@ -134,15 +134,12 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
             .addGroup(jPanSpritDepotLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jChkBoxInfFleetFlag)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jBtnAddDepot))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanSpritDepotLayout.setVerticalGroup(
             jPanSpritDepotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanSpritDepotLayout.createSequentialGroup()
-                .addGroup(jPanSpritDepotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jChkBoxInfFleetFlag)
-                    .addComponent(jBtnAddDepot))
+                .addComponent(jChkBoxInfFleetFlag)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPanVehicle, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -152,18 +149,27 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
         grdLocation.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][]
             {
-                {null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null}
             },
             new String []
             {
-                "Id", "Quantity", "Latitude", "Longitude", "Service Duration", "Time Windows Start", "Time Windows End"
+                "Id", "Quantity", "Latitude", "Longitude", "Picking", "Service Duration", "Time Windows Start", "Time Windows End"
             }
         )
         {
+            Class[] types = new Class []
+            {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+            };
             boolean[] canEdit = new boolean []
             {
-                false, true, false, false, true, true, true
+                false, true, false, false, true, true, true, true
             };
+
+            public Class getColumnClass(int columnIndex)
+            {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex)
             {
@@ -172,7 +178,7 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
         });
         grdLocation.setHorizontalScrollEnabled(true);
         grdLocation.setSortable(false);
-        grdLocation.getTableHeader().setReorderingAllowed(false);
+		grdLocation.getTableHeader().setReorderingAllowed(false);
         jScrollPanParcels.setViewportView(grdLocation);
 
         javax.swing.GroupLayout jPanSpritLocationLayout = new javax.swing.GroupLayout(jPanSpritLocation);
@@ -543,10 +549,6 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
 		return chkTripDisplay;
 	}
 
-	public javax.swing.JButton getjBtnAddDepot() {
-		return jBtnAddDepot;
-	}
-
 	public javax.swing.JCheckBox getjChkBoxInfFleetFlag() {
 		return jChkBoxInfFleetFlag;
 	}
@@ -575,6 +577,15 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
 		return lblTripDurationVal;
 	}
 
+	public javax.swing.JScrollPane getScrollPaneInfo() {
+		return scrollPaneLog;
+	}
+	
+	public javax.swing.JTextArea getTxtAreaInfo()
+	{
+		return txtAreaLog;
+	}
+
 	
 	@Override
 	public void processCommand(JMVCommandEvent command) {
@@ -600,7 +611,9 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
 		{
 			public void run()
 			{
-				new VRPUI().setVisible( true );
+				JFrame vrpui = new VRPUI();
+				vrpui.setExtendedState(JFrame.MAXIMIZED_BOTH); 
+				vrpui.setVisible( true );
 			}
 		} );
 	}
@@ -608,13 +621,14 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnProcess;
     private javax.swing.JButton btnReset;
-    private javax.swing.JButton btnSpritPrev;
     private javax.swing.JButton btnSpritNext;
+    private javax.swing.JButton btnSpritPrev;
     private javax.swing.JButton btnTripPrev;
     private javax.swing.JButton btnTripnext;
     private javax.swing.JCheckBox chkDisplayRtCstr;
     private javax.swing.JCheckBox chkTripDisplay;
-    private javax.swing.JButton jBtnAddDepot;
+    private org.jdesktop.swingx.JXTable grdDepot;
+    private org.jdesktop.swingx.JXTable grdLocation;
     private javax.swing.JCheckBox jChkBoxInfFleetFlag;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -639,8 +653,6 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
     private javax.swing.JScrollPane jScrollPanParcels;
     private javax.swing.JScrollPane jScrollPanVehicle;
     private javax.swing.JSplitPane jSplitPane;
-    private org.jdesktop.swingx.JXTable grdDepot;
-    private org.jdesktop.swingx.JXTable grdLocation;
     private org.jdesktop.swingx.JXTaskPane jXTskPanLogs;
     private org.jdesktop.swingx.JXTaskPane jXTskPanVRPCalc;
     private javax.swing.JLabel lblDistanceRtCstrVal;

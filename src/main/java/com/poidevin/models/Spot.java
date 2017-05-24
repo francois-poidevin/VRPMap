@@ -7,10 +7,12 @@ public class Spot {
 	private SpotType type; //Point type (DEPOT | DELIVERY | PICKUP)
 	private Double lat;
 	private Double lon;
+	//Location specific datas
 	private Integer timeStart; //Starting Processing time
 	private Integer timeEnd; //Ending Processing time
 	private Integer NbParcel;
 	private Integer TaskDuration; 
+	//Depot specific datas
 	
 	public Spot(String _ID, //Unique ID
 				SpotType _type, //Point type (DEPOT | DELIVERY | PICKUP)
