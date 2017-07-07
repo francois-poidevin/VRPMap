@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.graphhopper.jsprit.analysis.toolbox.Plotter;
 import com.graphhopper.jsprit.core.algorithm.VehicleRoutingAlgorithm;
 import com.graphhopper.jsprit.core.algorithm.box.Jsprit;
 import com.graphhopper.jsprit.core.problem.Location;
@@ -16,10 +17,14 @@ import com.graphhopper.jsprit.core.problem.job.Service;
 import com.graphhopper.jsprit.core.problem.job.Shipment;
 import com.graphhopper.jsprit.core.problem.solution.VehicleRoutingProblemSolution;
 import com.graphhopper.jsprit.core.problem.solution.route.VehicleRoute;
+import com.graphhopper.jsprit.core.problem.solution.route.activity.TourActivity;
 import com.graphhopper.jsprit.core.problem.vehicle.VehicleImpl;
 import com.graphhopper.jsprit.core.problem.vehicle.VehicleType;
 import com.graphhopper.jsprit.core.problem.vehicle.VehicleTypeImpl;
+import com.graphhopper.jsprit.core.reporting.SolutionPrinter;
+import com.graphhopper.jsprit.core.reporting.SolutionPrinter.Print;
 import com.graphhopper.jsprit.core.util.Solutions;
+import com.poidevin.controller.VRPController;
 import com.poidevin.models.Spot;
 import com.poidevin.models.SpotType;
 
@@ -70,7 +75,7 @@ public class VRPHelper {
 			vehicleType = vehicleTypeBuilder.build();
 			
 			/*
-			 * get a vehicle-builder and build a vehicle located at (10,10) with type "vehicleType"
+			 * get a vehicle-builder and build a vehicle located at Depot/Vehicle location with type "vehicleType"
 			 */
 			VehicleImpl.Builder vehicleBuilder = VehicleImpl.Builder.newInstance("vehicle");
 			VehicleImpl vehicle = null;
@@ -116,7 +121,11 @@ public class VRPHelper {
 
 			//create the OSRM route matrix cost
 			OsrmVRPTransportCostMatrixHelper.Builder builder = 
-					OsrmVRPTransportCostMatrixHelper.Builder.newInstance(new URL("http://router.project-osrm.org/table/v1/driving/") );
+					OsrmVRPTransportCostMatrixHelper.Builder.newInstance(new URL("http://osm.gls-france.com/osrm/table/v1/driving/") );
+			/**
+			 * Official public server, often done, so keep in case
+			 * OsrmVRPTransportCostMatrixHelper.Builder.newInstance(new URL("http://router.project-osrm.org/table/v1/driving/") );
+			 */
 			OsrmVRPTransportCostMatrixHelper clsOSRMVRPCostMatrixHlp = new OsrmVRPTransportCostMatrixHelper();
 			//feed the OSRM route matrix cost
 			//add start location
@@ -179,9 +188,32 @@ public class VRPHelper {
 			//add the TimeStart and TimeEnd to each point
 			List<VehicleRoute> lstBestSolution = new ArrayList<>(bestSolution.getRoutes());
 			
+			//Display in logs the results
+			SolutionPrinter.print(problem, bestSolution, Print.VERBOSE);
+						
+			//Generate an result image 
+			new Plotter(problem,bestSolution).invertCoordinates(true).setScalingFactor(16).plot(System.getProperty("java.io.tmpdir" )+"solution.png", "solution");
+			VRPController.addInfo( "take a look in "+ System.getProperty("java.io.tmpdir" )+"solution.png" +" !" );
+			
+			//construct the ordered spot list 
+			for(VehicleRoute vcRt : lstBestSolution)
+			{
+				for(TourActivity trAc : vcRt.getTourActivities().getActivities())
+				{
+					for(Spot spt : lstSpot)
+					{
+						if( spt.getID().equals(String.valueOf(trAc.getIndex() ) ) &&
+							! SpotType.DEPOT.equals(spt.getType()))
+						{
+							lstOrderedSpot.add(spt);
+						}
+					}
+				}
+			}
+			
 		}else
 		{
-			//TODO add some logs to inform user
+			VRPController.addInfo("VRP : Nothing to process");
 		}
 		
 		return lstOrderedSpot;

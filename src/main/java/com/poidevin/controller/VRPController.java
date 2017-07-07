@@ -19,6 +19,7 @@ import javax.swing.table.DefaultTableModel;
 import com.poidevin.UI.VRPUI;
 import com.poidevin.beans.org.openstreetmap.gui.jmapviewer.Coordinate;
 import com.poidevin.beans.org.openstreetmap.gui.jmapviewer.MapMarkerDot;
+import com.poidevin.helpers.VRPHelper;
 import com.poidevin.models.Spot;
 import com.poidevin.models.SpotType;
 
@@ -287,6 +288,8 @@ public class VRPController {
 		
     	List<Spot> lstSpot = new ArrayList<>();
     	
+    	
+    	
     	//validate existing datas
 		DefaultTableModel grdDepotModel = (DefaultTableModel) getView().getGrdDepot().getModel();
 		DefaultTableModel grdLocationModel = (DefaultTableModel) getView().getGrdLocation().getModel();
@@ -296,13 +299,19 @@ public class VRPController {
 		{
 			try
 			{
+				//Collect datas
 				lstSpot = collectDatas(grdDepotModel, grdLocationModel);
-				// TODO Code the VRP processing here
+				//instanciate the VRP worker
+				VRPHelper clsVRPHelper = new VRPHelper();
+				clsVRPHelper.setLstPoint(lstSpot);
+				
+				// VRP processing here
+				List<Spot>lstOrdonnateSpot = clsVRPHelper.solveProblem();
 			}catch(Exception ex)
 			{
 				JOptionPane.showMessageDialog(getView(),"Error : " + ex.getMessage() );
 				//logs
-		    	addInfo( "Error : " + ex.getMessage() );
+		    	addInfo( "Error VRP : " + ex.getMessage() );
 			}
 			
 		}else
