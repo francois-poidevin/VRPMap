@@ -1,6 +1,8 @@
 package com.poidevin.helpers;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -188,9 +190,14 @@ public class VRPHelper {
 			//add the TimeStart and TimeEnd to each point
 			List<VehicleRoute> lstBestSolution = new ArrayList<>(bestSolution.getRoutes());
 			
+			StringWriter stringWriter = new StringWriter();
+			PrintWriter prWri = new PrintWriter(stringWriter);
+			
 			//Display in logs the results
-			SolutionPrinter.print(problem, bestSolution, Print.VERBOSE);
-						
+			SolutionPrinter.print(prWri, problem, bestSolution, Print.VERBOSE);
+			
+			VRPController.addInfo("\n" + stringWriter.toString());
+
 			//Generate an result image 
 			new Plotter(problem,bestSolution).invertCoordinates(true).setScalingFactor(16).plot(System.getProperty("java.io.tmpdir" )+"solution.png", "solution");
 			VRPController.addInfo( "take a look in "+ System.getProperty("java.io.tmpdir" )+"solution.png" +" !" );
