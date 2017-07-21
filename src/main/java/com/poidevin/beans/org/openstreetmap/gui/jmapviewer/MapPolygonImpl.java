@@ -21,6 +21,8 @@ public class MapPolygonImpl extends MapObjectImpl implements MapPolygon {
 
     private List<? extends ICoordinate> points;
 
+    private boolean bOpenPoly = false;
+
     public MapPolygonImpl(ICoordinate ... points) {
         this(null, null, points);
     }
@@ -81,14 +83,22 @@ public class MapPolygonImpl extends MapObjectImpl implements MapPolygon {
             g2.setStroke(getStroke());
         }
         // Draw
-        g.drawPolygon(polygon);
-        if (g instanceof Graphics2D && getBackColor() != null) {
-            Graphics2D g2 = (Graphics2D) g;
-            Composite oldComposite = g2.getComposite();
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
-            g2.setPaint(getBackColor());
-            g2.fillPolygon(polygon);
-            g2.setComposite(oldComposite);
+        //FRPO
+        if(!bOpenPoly)
+        {
+        	g.drawPolygon(polygon);
+        	if (g instanceof Graphics2D && getBackColor() != null) {
+        		Graphics2D g2 = (Graphics2D) g;
+        		Composite oldComposite = g2.getComposite();
+        		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+        		g2.setPaint(getBackColor());
+        		g2.fillPolygon(polygon);
+        		g2.setComposite(oldComposite);
+        	}
+        	
+        }else
+        {
+        	g.drawPolyline(polygon.xpoints, polygon.ypoints, polygon.npoints);        	
         }
         // Restore graphics
         g.setColor(oldColor);
@@ -103,6 +113,12 @@ public class MapPolygonImpl extends MapObjectImpl implements MapPolygon {
 
     public static Style getDefaultStyle() {
         return new Style(Color.BLUE, new Color(100, 100, 100, 50), new BasicStroke(2), getDefaultFont());
+    }
+
+    //FRPO
+    public void setPolyOpen(boolean _bOpen)
+    {
+    	this.bOpenPoly = _bOpen;
     }
 
     @Override

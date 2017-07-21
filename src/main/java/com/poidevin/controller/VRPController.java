@@ -19,8 +19,10 @@ import javax.swing.table.DefaultTableModel;
 import com.poidevin.UI.VRPUI;
 import com.poidevin.beans.org.openstreetmap.gui.jmapviewer.Coordinate;
 import com.poidevin.beans.org.openstreetmap.gui.jmapviewer.MapMarkerDot;
+import com.poidevin.beans.org.openstreetmap.gui.jmapviewer.MapPolygonImpl;
 import com.poidevin.helpers.OSRMHelper;
 import com.poidevin.helpers.VRPHelper;
+import com.poidevin.inbound.OSRM.GeoRoutingJson;
 import com.poidevin.models.Spot;
 import com.poidevin.models.SpotType;
 
@@ -30,6 +32,10 @@ public class VRPController {
 	
 	private List<MapMarkerDot> lstDepotMarker = new ArrayList<>();
 	private List<MapMarkerDot> lstLocationMarker = new ArrayList<>();
+	
+	private GeoRoutingJson clsOSRMResult = null;
+	private MapPolygonImpl clsPolyOSRM = null;
+	private List<MapMarkerDot> lstMapMarkersOSRM = new ArrayList<>();
 
 	/**
 	 * 
@@ -93,6 +99,7 @@ public class VRPController {
 				 * Map clearing
 				 */
 				getView().getMap().removeAllMapMarkers();
+				getView().getMap().removeAllMapPolygons();
 				
 				/**
 				 * Command clearing 
@@ -144,6 +151,9 @@ public class VRPController {
 				 */
 				lstDepotMarker.clear();
 				lstLocationMarker.clear();
+				clsOSRMResult = null;
+				clsPolyOSRM = null;
+				lstMapMarkersOSRM = new ArrayList<>();
 			}
 		});
 		
@@ -172,7 +182,7 @@ public class VRPController {
 			
 			@Override
 			public void focusGained(FocusEvent e) {
-				// TODO Auto-generated method stub
+				// Nothing todo
 				
 			}
 		});
@@ -192,8 +202,51 @@ public class VRPController {
 				
 			}
 		});
+		
+		getView().getChkTripDisplay().addActionListener( new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(getView().getChkTripDisplay().isSelected() && clsPolyOSRM != null)
+				{
+					lstMapMarkersOSRM = new ArrayList<>();
+					//add markers to the map
+					for( int i = 0 ; i < clsOSRMResult.getWaypoints().size(); i++)
+					{
+						if( i != clsOSRMResult.getWaypoints().size() -1 )
+						{
+							MapMarkerDot clsOSRMMarker = new MapMarkerDot(clsOSRMResult.getWaypoints().get(i).getLocation().get(1), 
+									clsOSRMResult.getWaypoints().get(i).getLocation().get(0));
+							clsOSRMMarker.setName(String.valueOf(i));
+							clsOSRMMarker.setBackColor(Color.RED);
+							lstMapMarkersOSRM.add(clsOSRMMarker);	
+							getView().getMap().addMapMarker(clsOSRMMarker);
+						}
+					}
+					
+					//add the polyline to the map
+					clsPolyOSRM.setColor(Color.RED);
+					clsPolyOSRM.setPolyOpen(true);
+					getView().getMap().addMapPolygon( clsPolyOSRM );
+					
+				}else
+				{
+					//remove the OSRM polyline
+					getView().getMap().removeMapPolygon(clsPolyOSRM);
+					//remove all OSRm markers
+					for(MapMarkerDot clsMarker : lstMapMarkersOSRM)
+					{
+						getView().getMap().removeMapMarker(clsMarker);
+					}
+				}
+				
+			}
+		});
 	}
 
+	/**
+	 * 
+	 */
 	private void initMapEvent()
 	{
 		getView().getMap().addMouseListener(new MouseAdapter() {
@@ -230,7 +283,7 @@ public class VRPController {
                 		
                 		MapMarkerDot clsMarker = new MapMarkerDot((Coordinate)getView().getMap().getPosition( e.getPoint() ));
                     	clsMarker.setName("1");
-                    	clsMarker.setBackColor(Color.RED);
+                    	clsMarker.setBackColor(Color.GREEN);
                     	getView().getMap().addMapMarker( clsMarker );
                     	lstDepotMarker.add(clsMarker);
                     	//logs
@@ -284,8 +337,7 @@ public class VRPController {
 	 */
 	private void processVRP()
 	{
-		//logs
-    	addInfo("Start VRP Processing" );
+		
 		
     	List<Spot> lstSpot = new ArrayList<>();
     	
@@ -303,10 +355,18 @@ public class VRPController {
 				//Collect datas
 				lstSpot = collectDatas(grdDepotModel, grdLocationModel);
 				
+				//logs
+		    	addInfo("Start OSRM Processing" );
 				//calculate the optimize OSRM routing
 				OSRMHelper clsOSRMHelper = new OSRMHelper();
-				List<Spot>lstOrdonnateSpot_OSRM = clsOSRMHelper.solveproblem();
+				clsOSRMHelper.setLstPoint(lstSpot);
+				clsOSRMResult = clsOSRMHelper.solveproblem();
+				clsPolyOSRM = new MapPolygonImpl(decode(clsOSRMHelper.getPolyline()));
+				//logs
+		    	addInfo("End OSRM Processing" );
 				
+				//logs
+		    	addInfo("Start VRP Processing" );
 				//calculate the optimize VRP routing
 				//instanciate the VRP worker
 				VRPHelper clsVRPHelper = new VRPHelper();
@@ -314,13 +374,15 @@ public class VRPController {
 				
 				// VRP processing here
 				List<Spot>lstOrdonnateSpot_VRP = clsVRPHelper.solveProblem();
+				//logs
+		    	addInfo("End VRP Processing" );
 				
 				
 			}catch(Exception ex)
 			{
 				JOptionPane.showMessageDialog(getView(),"Error : " + ex.getMessage() );
 				//logs
-		    	addInfo( "Error VRP : " + ex.getMessage() );
+		    	addInfo( "Error OSRM or VRP : " + ex.getMessage() );
 			}
 			
 		}else
@@ -328,8 +390,7 @@ public class VRPController {
 			JOptionPane.showMessageDialog(getView(),"Please define Depot and Location");
 		}
 
-		//logs
-    	addInfo("End VRP Processing" );
+		
 	}
 	
 	/**
@@ -375,6 +436,48 @@ public class VRPController {
 		}
 		
 		return lstSpot;
+	}
+	
+	/**
+	 * Allow to decode a OSRM polyline for displayed it onto the OSM map
+	 * 
+	 * @param _encoded
+	 * @return
+	 */
+	public static List<Coordinate> decode(final String encodedPath) {
+        int len = encodedPath.length();
+
+        // For speed we preallocate to an upper bound on the final length, then
+        // truncate the array before returning.
+        final List<Coordinate> path = new ArrayList<Coordinate>();
+        int index = 0;
+        int lat = 0;
+        int lng = 0;
+
+        while (index < len) {
+            int result = 1;
+            int shift = 0;
+            int b;
+            do {
+                b = encodedPath.charAt(index++) - 63 - 1;
+                result += b << shift;
+                shift += 5;
+            } while (b >= 0x1f);
+            lat += (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
+
+            result = 1;
+            shift = 0;
+            do {
+                b = encodedPath.charAt(index++) - 63 - 1;
+                result += b << shift;
+                shift += 5;
+            } while (b >= 0x1f);
+            lng += (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
+
+            path.add(new Coordinate(lat * 1e-5, lng * 1e-5));
+        }
+
+        return path;
 	}
 	
 
