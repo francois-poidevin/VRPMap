@@ -432,7 +432,7 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
         );
         jPanMapLayout.setVerticalGroup(
             jPanMapLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jMapViewer, javax.swing.GroupLayout.DEFAULT_SIZE, 710, Short.MAX_VALUE)
+            .addComponent(jMapViewer, javax.swing.GroupLayout.DEFAULT_SIZE, 950, Short.MAX_VALUE)
         );
 
         jLblZoom.setText("Zoom :");
@@ -587,8 +587,9 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
 	}
 
 	
+	
 	@Override
-	public void processCommand(JMVCommandEvent command) {
+	public void processCommand(com.poidevin.beans.org.openstreetmap.gui.jmapviewer.events.JMVCommandEvent command) {
 		//TODO search why event not raised
 		if (command.getCommand().equals(JMVCommandEvent.COMMAND.ZOOM) ||
 				command.getCommand().equals(JMVCommandEvent.COMMAND.MOVE)) 
@@ -598,7 +599,6 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
 			if (getZoomValue() != null)
 				getZoomValue().setText(String.format("%s", getMap().getZoom()));
 		}
-		
 	}
 	
 	/**
@@ -663,4 +663,5 @@ public class VRPUI extends javax.swing.JFrame implements JMapViewerEventListener
     private javax.swing.JScrollPane scrollPaneLog;
     private javax.swing.JTextArea txtAreaLog;
     // End of variables declaration//GEN-END:variables
+
 }

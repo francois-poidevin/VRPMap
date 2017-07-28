@@ -16,7 +16,9 @@ import org.apache.http.impl.client.HttpClients;
 import com.google.gson.Gson;
 import com.poidevin.models.Spot;
 import com.poidevin.models.SpotType;
+
 import com.poidevin.inbound.OSRM.GeoRoutingJson;
+import com.poidevin.inbound.OSRM.GeoTripJson;
 import com.poidevin.inbound.OSRM.Waypoint;
 
 public class OSRMHelper {
@@ -29,7 +31,9 @@ public class OSRMHelper {
 	private String polyline = null;
 	
 	/**
-	 * 
+	 * solveproblem method, based on the endpoint API :
+	 * http://osm.gls-france.com/osrm/route/v1/driving/{coordinates} (doc : http://project-osrm.org/docs/v5.5.4/api/) - Routing
+ 	 * Allow to fetch the Json class result for an routing through all spot passed. No ordering algorithm. 
 	 * @return
 	 * @throws IOException
 	 * @throws RuntimeException
@@ -83,11 +87,63 @@ public class OSRMHelper {
 			}
 			
 		}
-		
-		
 		return clsResultJson;
 	}
-
+	
+	/**
+	 * getOptimRoutingDatas method, based on the endpoint API :
+	 * http://osm.gls-france.com/osrm/trip/v1/driving/{coordinates} (doc : http://project-osrm.org/docs/v5.5.4/api/) - Trip
+	 * Allow to fetch the Json class result for an optimized routing through all spot passed. Salesman problem = ordering algorithm.
+	 * @return
+	 * @throws IOException
+	 * @throws RuntimeException
+	 */
+	public GeoTripJson getOptimRoutingDatas() throws IOException, RuntimeException
+	{
+		GeoTripJson clsResultJson = null;
+		
+		if( lstSpot != null && !lstSpot.isEmpty() )
+		{
+			StringBuilder strParam = new StringBuilder();
+			//construct the URL parameter (Lon,Lat;Lon,Lat;...)
+			//repeat the first depot point at last position for polyline closed routing
+			Spot clsDepotSpot = null;
+			for( Spot clsSpot : lstSpot )
+			{
+				if(SpotType.DEPOT.equals(clsSpot.getType()))
+				{
+					clsDepotSpot = clsSpot;
+				}
+				strParam.append(clsSpot.getLon()).append(",").append(clsSpot.getLat()).append(";");
+			}
+			if( clsDepotSpot != null )
+			{
+				strParam.append(clsDepotSpot.getLon()).append(",").append(clsDepotSpot.getLat()).append(";");
+			}
+			strParam.delete(strParam.length()-1, strParam.length() );
+			
+			// Create new getRequest with below mentioned URL
+			HttpGet getHttpRequest = new HttpGet("http://router.project-osrm.org/trip/v1/driving/"+strParam+"?overview=full" );
+					
+			// Add additional header to getRequest which accepts application/json data
+			getHttpRequest.addHeader("accept", "application/json");
+			 
+			// Execute the http request
+			CloseableHttpResponse clsResponseReq = httpclient.execute( getHttpRequest );
+			// Check for HTTP response code: 200 = success
+			if (clsResponseReq.getStatusLine().getStatusCode() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : " + clsResponseReq.getStatusLine().getStatusCode());
+			}
+			
+			String strJSonVal = convertStreamToString( clsResponseReq.getEntity().getContent() );
+			
+			Gson clsGSon = new Gson();
+			
+			clsResultJson = clsGSon.fromJson( strJSonVal, GeoTripJson.class);
+		}
+		return clsResultJson;
+	}
+	
 	/**
 	 * 
 	 * @param _lstSpot

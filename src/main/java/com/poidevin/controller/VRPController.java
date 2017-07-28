@@ -147,7 +147,7 @@ public class VRPController {
 						null,
 						null});
 				/**
-				 * clearing MapMarkerDot List
+				 * clearing List
 				 */
 				lstDepotMarker.clear();
 				lstLocationMarker.clear();
@@ -167,7 +167,7 @@ public class VRPController {
 			
 			@Override
 			public void focusGained(FocusEvent e) {
-				// TODO Auto-generated method stub
+				// Nothing to do
 				
 			}
 		});
@@ -182,7 +182,7 @@ public class VRPController {
 			
 			@Override
 			public void focusGained(FocusEvent e) {
-				// Nothing todo
+				// Nothing to do
 				
 			}
 		});
@@ -337,11 +337,7 @@ public class VRPController {
 	 */
 	private void processVRP()
 	{
-		
-		
     	List<Spot> lstSpot = new ArrayList<>();
-    	
-    	
     	
     	//validate existing datas
 		DefaultTableModel grdDepotModel = (DefaultTableModel) getView().getGrdDepot().getModel();
